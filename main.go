@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"image/color"
 	_ "image/png"
+	"time"
 
+	"github.com/RegineerCZ/Go-Bafoonery/drawing"
 	"github.com/RegineerCZ/Go-Bafoonery/structures"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 const (
@@ -22,23 +23,16 @@ const (
 
 var (
 	redDotImage *ebiten.Image
-	entities = [10]structures.Entity {}
+	entities = [100]structures.Entity {}
+	newTime, oldTime int64 = 0, 0
+	b = structures.NewButton("+", structures.NewRect(100, playAreaHeight+50, 30, 30), func() {fmt.Println("Press !")})
 )
 
 func init() {
-	var err error
-	redDotImage, _, err = ebitenutil.NewImageFromFile("img/test/red_dot.png")
-	if err != nil {
-		fmt.Println("New Image From File Error")
-		fmt.Println(err)
-		return
+	for i :=0; i< 100; i++{
+		entities[i] = structures.NewEntity(i, playAreaLft, playAreaTop, playAreaWidth-10, playAreaHeight-10)
+		entities[i].Move()
 	}
-
-	for i :=0; i< 10; i++{
-		entities[i] = structures.NewEntity(playAreaWidth, playAreaHeight)
-	}
-
-	fmt.Println("Done")
 }
 
 type Game struct {
@@ -46,58 +40,40 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	newTime    = time.Now().UnixNano()
+    deltaTime := float64(((newTime - oldTime) / 1000000)) * 0.001
+    oldTime    = newTime
+
+	for i :=0; i< 100; i++{
+		entities[i].Update(deltaTime)
+	}
+
+	b.Update()
+
 	g.count += 1
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	/*w, h := gophersImage.Size()
-	op := &ebiten.DrawImageOptions{}
-
-	// Move the image's center to the screen's upper-left corner.
-	// This is a preparation for rotating. When geometry matrices are applied,
-	// the origin point is the upper-left corner.
-	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
-
-	// Rotate the image. As a result, the anchor point of this rotate is
-	// the center of the image.
-	op.GeoM.Rotate(float64(g.count%360) * 2 * math.Pi / 360)
-
-	// Move the image to the screen's center.
-	op.GeoM.Translate(screenWidth/2, screenHeight/2)
-
-	screen.DrawImage(gophersImage, op)*/
-
+	drawing.DrawBox(screen, playAreaLft-5, playAreaTop-5, playAreaWidth+10, playAreaHeight+10, color.White)
+	drawing.DrawButton(screen, b)
 	
-	ebitenutil.DrawLine(screen, playAreaLft, playAreaTop, playAreaLft+playAreaWidth, playAreaTop, color.White)
-	ebitenutil.DrawLine(screen, playAreaLft, playAreaTop, playAreaLft, playAreaTop+playAreaHeight, color.White)
-	ebitenutil.DrawLine(screen, playAreaLft+playAreaWidth, playAreaTop, playAreaLft+playAreaWidth, playAreaTop+playAreaHeight, color.White)
-	ebitenutil.DrawLine(screen, playAreaLft, playAreaTop+playAreaHeight, playAreaLft+playAreaWidth, playAreaTop+playAreaHeight, color.White)
-
-	for i :=0; i< 10; i++{
-		drawEntity(screen, entities[i].Color, entities[i].X, entities[i].Y)
+	for i :=0; i< 100; i++{
+		drawing.DrawEntity(screen, entities[i])
 	}
 
 	//ebitenutil.DebugPrintAt(screen, "Test Value: "+fmt.Sprint(theta), playAreaLft + 10, playAreaTop + playAreaHeight + 10)
 }
 
-func drawEntity(screen *ebiten.Image, colorShift, x, y float64) {
-	//fmt.Printf("Drawing entity: [%g, %g] - col: %g\n", x, y, colorShift)
-	img := ebiten.NewImageFromImage(redDotImage)
-	op := &ebiten.DrawImageOptions{}
-	//tps := ebiten.MaxTPS()
-	//theta := 2.0 * math.Pi * float64((g.count/10)%tps) / float64(tps)
-	//op.ColorM.RotateHue(theta)
-	op.ColorM.RotateHue(colorShift)
-	op.GeoM.Translate(playAreaLft+ x, playAreaTop+ y)
-	screen.DrawImage(img, op)
-}
+
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
 }
 
 func main() {
+	oldTime = time.Now().UnixNano()
+
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Go Bafoonery")
 	game := &Game{}
