@@ -1,12 +1,8 @@
-package entity
+package structures
 
 import (
 	"fmt"
 	"math/rand"
-)
-
-const (
-	
 )
 
 func init() {
@@ -14,19 +10,21 @@ func init() {
 }
 
 type Entity struct {
-	x, y float64
-	turningSpeed float64
-	movementSpeed float64
-	color float64
+	X, Y float64
+	TurningSpeed float64
+	MovementSpeed float64
+	Color float64
 }
 
-func (e Entity) NewEntity(areaWidth, areaHeight int) Entity {
+func NewEntity(areaWidth, areaHeight int) Entity {
+	// Represented by hue shift of original image
 	colors := [...]float64 {0.0, 0.8, 1.2, 2.2, 3.0, 3.6, 4.4, 5.0, 5.6}
+	e := Entity{}
 
-	e.x = float64(rand.Intn(areaWidth))
-	e.y = float64(rand.Intn(areaHeight))
-	e.turningSpeed = 0.01
-	e.movementSpeed = 0.1
-	e.color = colors[rand.Intn(len(colors))]
+	e.X = float64(rand.Intn(areaWidth))
+	e.Y = float64(rand.Intn(areaHeight))
+	e.TurningSpeed = 0.01
+	e.MovementSpeed = 0.1
+	e.Color = colors[rand.Intn(len(colors))]
 	return e
 }
